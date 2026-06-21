@@ -2,7 +2,8 @@
 Google OAuth 2.0 認証を管理するモジュール
 
 ユーザーのGoogleアカウント認証とトークン管理を行います。
-トークンはStreamlitのセッション状態に保存され、サーバー側のファイルには保存しません。
+トークンはStreamlitのセッション状態とホームディレクトリのファイルに保存します。
+ファイル保存により、ブラウザリフレッシュ・Streamlit再起動後も認証状態が維持されます。
 
 【注意】PKCEのcode_verifierは一時ファイルに保存します。
 OAuthリダイレクト時にStreamlitのセッション状態がリセットされるため、
@@ -43,6 +44,9 @@ REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8501")
 # PKCEのcode_verifierを保存する一時ファイルのパス
 # セッション状態はOAuthリダイレクト後にリセットされるため一時ファイルを使う
 _PKCE_FILE = os.path.join(tempfile.gettempdir(), "schedule_tool_pkce_verifier.json")
+
+# トークン永続化ファイル（ブラウザリフレッシュ・Streamlit再起動後も認証を維持するため）
+_TOKEN_FILE = os.path.join(os.path.expanduser("~"), ".schedule_tool_token.json")
 
 
 def _get_secrets_file() -> str:
@@ -119,9 +123,27 @@ def exchange_code_for_token(code: str) -> None:
     _save_credentials(flow.credentials)
 
 
+def _save_token_to_file(data: dict) -> None:
+    """トークンをホームディレクトリのファイルに保存する"""
+    try:
+        with open(_TOKEN_FILE, "w") as f:
+            json.dump(data, f)
+    except Exception:
+        pass
+
+
+def _delete_token_file() -> None:
+    """永続化ファイルを削除する（ログアウト時）"""
+    try:
+        if os.path.exists(_TOKEN_FILE):
+            os.remove(_TOKEN_FILE)
+    except Exception:
+        pass
+
+
 def _save_credentials(creds: Credentials) -> None:
-    """認証情報をStreamlitセッション状態に保存する"""
-    st.session_state["token_data"] = {
+    """認証情報をStreamlitセッション状態とファイルに保存する"""
+    data = {
         "token": creds.token,
         "refresh_token": creds.refresh_token,
         "token_uri": creds.token_uri,
@@ -129,6 +151,8 @@ def _save_credentials(creds: Credentials) -> None:
         "client_secret": creds.client_secret,
         "scopes": list(creds.scopes or SCOPES),
     }
+    st.session_state["token_data"] = data
+    _save_token_to_file(data)
 
 
 def get_credentials() -> Credentials | None:
@@ -165,7 +189,38 @@ def is_authenticated() -> bool:
     return "token_data" in st.session_state
 
 
+def restore_session_from_file() -> bool:
+    """
+    永続化ファイルからトークンを復元してセッションに読み込む
+
+    ブラウザリフレッシュやStreamlit再起動後でも認証状態を維持するために使用。
+
+    Returns:
+        True: 復元成功（認証済み状態に）
+        False: ファイルなし・読み込み失敗・トークン更新失敗
+    """
+    if "token_data" in st.session_state:
+        return True
+
+    if not os.path.exists(_TOKEN_FILE):
+        return False
+
+    try:
+        with open(_TOKEN_FILE) as f:
+            data = json.load(f)
+    except Exception:
+        _delete_token_file()
+        return False
+
+    st.session_state["token_data"] = data
+
+    # 期限切れの場合は自動更新（失敗したらログアウト扱い）
+    creds = get_credentials()
+    return creds is not None
+
+
 def logout() -> None:
     keys_to_remove = ["token_data", "oauth_state", "user_info", "free_slots", "messages"]
     for key in keys_to_remove:
         st.session_state.pop(key, None)
+    _delete_token_file()

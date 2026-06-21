@@ -42,7 +42,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# カスタムCSS（全体のデザイン調整）
+# カスタムCSS（全体のデザイン調整・モバイル対応）
 st.markdown(
     """
     <style>
@@ -50,6 +50,29 @@ st.markdown(
     .subtitle { color: #666; font-size: 0.95rem; margin-bottom: 1.5rem; }
     .slot-item { padding: 0.4rem 0; font-size: 1.05rem; }
     .copy-hint { color: #888; font-size: 0.8rem; margin-top: 0.3rem; }
+
+    /* モバイル対応 */
+    @media (max-width: 640px) {
+        .main-title { font-size: 1.4rem; }
+        .subtitle { font-size: 0.85rem; }
+        .block-container { padding: 1rem 0.75rem 2rem; }
+        [data-testid="stButton"] > button {
+            min-height: 2.75rem;
+            font-size: 1rem;
+        }
+        [data-testid="stTextInput"] input,
+        [data-testid="stTextArea"] textarea,
+        [data-testid="stNumberInput"] input {
+            font-size: 1rem;
+        }
+        [data-testid="stSelectbox"] select {
+            font-size: 1rem;
+        }
+        [data-testid="stTab"] button {
+            font-size: 0.85rem;
+            padding: 0.4rem 0.5rem;
+        }
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -221,10 +244,10 @@ def show_main_app() -> None:
         st.session_state["tr_s_0"] = 18  # デフォルト: 夜18時
         st.session_state["tr_e_0"] = 22
 
-    # 各時間帯の入力行を表示
+    # 各時間帯の入力行を表示（スマートフォン対応: 3列レイアウト）
     ids_to_delete = []
     for uid in list(st.session_state["tr_ids"]):
-        c1, c2, c3, c4 = st.columns([2, 2, 3, 1])
+        c1, c2, c3 = st.columns([3, 3, 1])
         with c1:
             st.number_input(
                 "開始（時）", min_value=0, max_value=23,
@@ -236,17 +259,16 @@ def show_main_app() -> None:
                 key=f"tr_e_{uid}", label_visibility="collapsed",
             )
         with c3:
-            s = st.session_state.get(f"tr_s_{uid}", 0)
-            e = st.session_state.get(f"tr_e_{uid}", 1)
-            label = f"⏰ {s}:00 〜 {e}:00"
-            if s >= e:
-                label += " ⚠️ 開始≥終了"
-            st.caption(label)
-        with c4:
             # 最低1つは残す
             if len(st.session_state["tr_ids"]) > 1:
                 if st.button("✕", key=f"tr_del_{uid}"):
                     ids_to_delete.append(uid)
+        s = st.session_state.get(f"tr_s_{uid}", 0)
+        e = st.session_state.get(f"tr_e_{uid}", 1)
+        label = f"⏰ {s}:00 〜 {e}:00"
+        if s >= e:
+            label += " ⚠️ 開始≥終了"
+        st.caption(label)
 
     # 削除処理（ボタンが押されたIDを除去してrerun）
     if ids_to_delete:
@@ -332,7 +354,6 @@ def show_main_app() -> None:
     msg_mode = st.radio(
         "文章作成モード",
         options=["自分から候補日を送る", "相手の文章に返信する"],
-        horizontal=True,
         help="「自分から」は候補日をそのまま送る文章を作成します。「返信する」は相手のメッセージに合わせた返信文を作成します。",
     )
 
@@ -530,6 +551,10 @@ def main() -> None:
     if handle_oauth_callback():
         st.rerun()
         return
+
+    # 永続化ファイルからセッションを復元（ブラウザリフレッシュ後も認証を維持）
+    if not auth.is_authenticated():
+        auth.restore_session_from_file()
 
     # 認証状態に応じてページを切り替え
     if auth.is_authenticated():
