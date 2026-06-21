@@ -54,7 +54,27 @@ def _get_secrets_file() -> str:
 
 
 def _create_flow() -> Flow:
-    """OAuthフローを作成する"""
+    """OAuthフローを作成する（Streamlit SecretsまたはローカルJSONファイルから認証情報を読み込む）"""
+    # Streamlit Cloud: st.secrets から認証情報を読み込む
+    if "google_client_secrets" in st.secrets:
+        s = st.secrets["google_client_secrets"]
+        client_config = {
+            "web": {
+                "client_id": s["client_id"],
+                "client_secret": s["client_secret"],
+                "project_id": s.get("project_id", ""),
+                "auth_uri": s.get("auth_uri", "https://accounts.google.com/o/oauth2/auth"),
+                "token_uri": s.get("token_uri", "https://oauth2.googleapis.com/token"),
+                "auth_provider_x509_cert_url": s.get(
+                    "auth_provider_x509_cert_url",
+                    "https://www.googleapis.com/oauth2/v1/certs",
+                ),
+                "redirect_uris": [REDIRECT_URI],
+            }
+        }
+        return Flow.from_client_config(client_config, scopes=SCOPES, redirect_uri=REDIRECT_URI)
+
+    # ローカル開発: client_secrets.json から読み込む
     secrets_file = _get_secrets_file()
     if not os.path.exists(secrets_file):
         raise FileNotFoundError(
@@ -62,8 +82,7 @@ def _create_flow() -> Flow:
             "Google Cloud ConsoleでOAuth 2.0クライアントIDを作成し、"
             "JSONをダウンロードしてプロジェクトフォルダに配置してください。"
         )
-    flow = Flow.from_client_secrets_file(secrets_file, scopes=SCOPES, redirect_uri=REDIRECT_URI)
-    return flow
+    return Flow.from_client_secrets_file(secrets_file, scopes=SCOPES, redirect_uri=REDIRECT_URI)
 
 
 def _generate_pkce_pair() -> tuple[str, str]:
