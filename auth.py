@@ -39,7 +39,14 @@ SCOPES = [
     "https://www.googleapis.com/auth/userinfo.profile",
 ]
 
-REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8501")
+def _get_redirect_uri() -> str:
+    """リダイレクトURIを取得する（st.secrets → 環境変数 → デフォルトの順で参照）"""
+    if "GOOGLE_REDIRECT_URI" in st.secrets:
+        return st.secrets["GOOGLE_REDIRECT_URI"]
+    return os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8501")
+
+
+REDIRECT_URI = _get_redirect_uri()
 
 # PKCEのcode_verifierを保存する一時ファイルのパス
 # セッション状態はOAuthリダイレクト後にリセットされるため一時ファイルを使う
