@@ -117,16 +117,9 @@ def get_authorization_url() -> tuple[str, str]:
     redirect_uri = _get_redirect_uri()
     flow = _create_flow()
 
-    # PKCEペアを生成し、code_verifierを一時ファイルに保存
-    code_verifier, code_challenge = _generate_pkce_pair()
-    _save_pkce_verifier(code_verifier)
-
     auth_url, state = flow.authorization_url(
         access_type="offline",
-        include_granted_scopes="true",
         prompt="consent",
-        code_challenge=code_challenge,
-        code_challenge_method="S256",
     )
     return auth_url, redirect_uri
 
@@ -135,11 +128,7 @@ def exchange_code_for_token(code: str) -> None:
     """Googleからのコードをアクセストークンに交換する"""
     flow = _create_flow()
     flow.oauth2session.verify = certifi.where()
-
-    # 一時ファイルからcode_verifierを取得
-    code_verifier = _load_pkce_verifier()
-
-    flow.fetch_token(code=code, code_verifier=code_verifier)
+    flow.fetch_token(code=code)
     _save_credentials(flow.credentials)
 
 
