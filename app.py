@@ -148,24 +148,7 @@ def show_login_page() -> None:
         auth_url, redirect_uri = auth.get_authorization_url()
         st.caption(f"🔧 リダイレクトURI: `{redirect_uri}`")
         # target="_self" で同じタブで開く（OAuthに必須）
-        st.markdown(
-            f"""
-            <a href="{auth_url}" target="_top" style="
-                display: inline-block;
-                padding: 0.6rem 1.4rem;
-                background-color: #4285F4;
-                color: white;
-                text-decoration: none;
-                border-radius: 6px;
-                font-size: 1rem;
-                font-weight: 500;
-                margin-top: 0.5rem;
-            ">
-                🔐 Googleでログイン
-            </a>
-            """,
-            unsafe_allow_html=True,
-        )
+        st.link_button("🔐 Googleでログイン", auth_url, use_container_width=False)
     except FileNotFoundError as e:
         st.error(str(e))
         st.markdown(
