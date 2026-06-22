@@ -145,8 +145,7 @@ def show_login_page() -> None:
     st.markdown("カレンダーの読み取りと予定の登録に、Googleアカウントへのアクセスが必要です。")
 
     try:
-        auth_url, redirect_uri = auth.get_authorization_url()
-        st.caption(f"🔧 リダイレクトURI: `{redirect_uri}`")
+        auth_url, _ = auth.get_authorization_url()
         # target="_self" で同じタブで開く（OAuthに必須）
         st.link_button("🔐 Googleでログイン", auth_url, use_container_width=False)
     except FileNotFoundError as e:
