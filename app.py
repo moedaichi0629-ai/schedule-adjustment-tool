@@ -150,7 +150,7 @@ def show_login_page() -> None:
         # target="_self" で同じタブで開く（OAuthに必須）
         st.markdown(
             f"""
-            <a href="{auth_url}" target="_self" style="
+            <a href="{auth_url}" target="_top" style="
                 display: inline-block;
                 padding: 0.6rem 1.4rem;
                 background-color: #4285F4;
