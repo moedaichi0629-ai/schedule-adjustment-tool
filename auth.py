@@ -64,24 +64,12 @@ def _create_flow() -> Flow:
     """OAuthフローを作成する（Streamlit SecretsまたはローカルJSONファイルから認証情報を読み込む）"""
     redirect_uri = _get_redirect_uri()
 
-    # Streamlit Cloud: st.secrets から認証情報を読み込む
+    # Streamlit Cloud: st.secrets からJSONまるごと読み込む
     try:
-        if "google_client_secrets" in st.secrets:
-            s = st.secrets["google_client_secrets"]
-            client_config = {
-                "web": {
-                    "client_id": s["client_id"],
-                    "client_secret": s["client_secret"],
-                    "project_id": s.get("project_id", ""),
-                    "auth_uri": s.get("auth_uri", "https://accounts.google.com/o/oauth2/auth"),
-                    "token_uri": s.get("token_uri", "https://oauth2.googleapis.com/token"),
-                    "auth_provider_x509_cert_url": s.get(
-                        "auth_provider_x509_cert_url",
-                        "https://www.googleapis.com/oauth2/v1/certs",
-                    ),
-                    "redirect_uris": [redirect_uri],
-                }
-            }
+        if "GOOGLE_CLIENT_SECRETS_JSON" in st.secrets:
+            client_config = json.loads(st.secrets["GOOGLE_CLIENT_SECRETS_JSON"])
+            # redirect_uris を現在のURIで上書き
+            client_config["web"]["redirect_uris"] = [redirect_uri]
             return Flow.from_client_config(client_config, scopes=SCOPES, redirect_uri=redirect_uri)
     except Exception:
         pass
