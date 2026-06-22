@@ -145,7 +145,8 @@ def show_login_page() -> None:
     st.markdown("カレンダーの読み取りと予定の登録に、Googleアカウントへのアクセスが必要です。")
 
     try:
-        auth_url = auth.get_authorization_url()
+        auth_url, redirect_uri = auth.get_authorization_url()
+        st.caption(f"🔧 リダイレクトURI: `{redirect_uri}`")
         # target="_self" で同じタブで開く（OAuthに必須）
         st.markdown(
             f"""

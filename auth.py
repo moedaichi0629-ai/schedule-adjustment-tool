@@ -112,8 +112,9 @@ def _load_pkce_verifier() -> str | None:
         return None
 
 
-def get_authorization_url() -> str:
-    """Google認証ページへのURLを生成する"""
+def get_authorization_url() -> tuple[str, str]:
+    """Google認証ページへのURLと使用したリダイレクトURIを返す"""
+    redirect_uri = _get_redirect_uri()
     flow = _create_flow()
 
     # PKCEペアを生成し、code_verifierを一時ファイルに保存
@@ -127,7 +128,7 @@ def get_authorization_url() -> str:
         code_challenge=code_challenge,
         code_challenge_method="S256",
     )
-    return auth_url
+    return auth_url, redirect_uri
 
 
 def exchange_code_for_token(code: str) -> None:
