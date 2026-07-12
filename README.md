@@ -2,6 +2,10 @@
 
 Googleカレンダーと連携し、空き時間の候補日と送信用文章を自動生成するWebアプリです。
 
+**デモ:** https://schedule-adjustment-tool-eap349ikdfvjevnzg55qi7.streamlit.app
+
+> Streamlit Cloudの無料枠でホスティングしているため、しばらくアクセスがないとスリープします。初回アクセス時は起動に数十秒かかることがあります。
+
 ---
 
 ## どんな課題を解決するか
