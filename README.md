@@ -1,4 +1,37 @@
-# 📅 日程調整支援ツール
+# 日程調整支援ツール
+
+Googleカレンダーの空き時間を探し、候補日とLINE・メール向けの案内文を生成するWebアプリです。
+
+[作品一覧](https://github.com/moedaichi0629-ai/landing-page) · [ポートフォリオ](https://moedaichi0629-ai.github.io/landing-page/)
+
+## 解決する課題
+
+**想定利用者：** 打ち合わせの日程調整を行うフリーランス・営業担当者
+
+空き時間の確認と候補日の案内文作成を繰り返す手間。
+
+## 主な機能
+
+- 空き時間候補を最大5件提案
+- LINE・メール用の案内文生成
+- 確定した予定のカレンダー登録
+
+## デモ・利用方法
+
+[デモ](https://schedule-adjustment-tool-eap349ikdfvjevnzg55qi7.streamlit.app)。休止後の起動には時間がかかる場合があります。
+
+## 使用技術
+
+Python / Streamlit / Google Calendar API / Google OAuth / OpenAI API
+
+## 工夫した点
+
+日程候補の抽出から案内文作成・予定登録までを一つの画面で支援します。
+
+## セットアップ・技術詳細
+
+<details>
+<summary>操作方法・構成・設定手順などの詳細を開く</summary>
 
 Googleカレンダーと連携し、空き時間の候補日と送信用文章を自動生成するWebアプリです。
 
@@ -289,3 +322,6 @@ Google Cloud ConsoleのリダイレクトURIが `http://localhost:8501` と完�
 ## ライセンス
 
 MIT License
+
+</details>
+
