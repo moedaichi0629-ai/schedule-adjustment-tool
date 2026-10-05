@@ -2,7 +2,7 @@
 
 Googleカレンダーの空き時間を探し、候補日とLINE・メール向けの案内文を生成するWebアプリです。
 
-[作品一覧](https://github.com/moedaichi0629-ai/landing-page) · [ポートフォリオ](https://moedaichi0629-ai.github.io/landing-page/)
+[作品一覧](https://github.com/moedaichi0629-ai/landing-page) · [ポートフォリオ](https://moedaichi0629-ai.github.io/)
 
 ## 解決する課題
 
